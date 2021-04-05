@@ -1,0 +1,142 @@
+#!/usr/bin/env node
+
+//Module dependencies.
+var app = require('../app');
+var debug = require('debug')('chat:server');
+var http = require('http');
+
+//Get port from environment and store in Express.
+var port = normalizePort(process.env.MQTTPANELPORT || '80');
+app.set('port', port);
+
+//Create HTTP server.
+var server = http.createServer(app);
+
+//Listen on provided port, on all network interfaces.
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
+
+
+//mqtt-panel
+var mqtt = require('mqtt');
+let clientId = Math.floor(10000000 + Math.random() * 90000000)
+var options = {
+  port: 1883,
+  host: 'mqtt://localhost',
+  username: 'kekstra',
+  password: 'Resul81Yag',
+  clientId,
+  reconnectPeriod: 10000,
+  encoding: 'utf8'
+}
+
+var mqttbroker = 'mqtt://localhost:1883'
+//var mqttbroker = 'mqtt://localhost' 
+//var mqttbroker = process.env.MQTTBROKER || 'mqtt:m2m.eclipse.org'
+var mqttport = 1883;
+
+var io = require('socket.io')(server);
+var mqttclient = mqtt.connect(mqttbroker, options);
+
+
+// Subscribe to topic
+io.sockets.on('connection', function (socket) {
+  socket.on('subscribe', function (data) {
+    mqttclient.subscribe("#");
+  });
+  socket.on('mqtt', function (msg) {
+    console.log("--msg: " + JSON.stringify(msg))
+  });
+
+  socket.on('publish', function (msg) {
+    let data = JSON.parse(JSON.stringify(msg))
+    mqttclient.publish(data.topic, data.payload, (err) => {
+      if (typeof err != 'undefined' && err.trim()) {
+        console.log("--publish: err: " + err)
+      }
+    })
+    try {
+      console.log("--publish: " + JSON.stringify(msg))
+    } catch (err) {
+      console.log("--publish: err1:" + err)
+    }
+  });
+});
+
+// Push the message to socket.io
+mqttclient.on('message', function (topic, payload) {
+  let data = JSON.parse(JSON.stringify(payload)).data
+  //console.log("onMessage() topic: " + topic + ", msg: " + JSON.stringify(payload))
+  console.log("onMessage() topic: " + topic + ", data: " + JSON.stringify(data))
+  io.sockets.emit('mqtt',
+    {
+      'topic': topic,
+      'payload': data
+    }
+  );
+});
+
+mqttclient.on('connect', function(data){
+  console.log("mqttclient onConnect() clientId: " + clientId + ", data: " + JSON.stringify(data))
+})
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}

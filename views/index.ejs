@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A web interface for MQTT">
+  <meta name="author" content="Fabian Affolter">
+
+  <title>Mosquitto</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+  <!-- jQuery -->
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <!-- socket.io. -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- Chart -->
+  <script type="text/javascript" src="javascripts/Chart.min.js"></script>
+  <script type="text/javascript" src="javascripts/drawChart.js"></script>
+  <!-- lightbox -->
+  <link rel="stylesheet" href="stylesheets/lightbox.min.css">
+  <script type="text/javascript" src="javascripts/lightbox.js"></script>
+
+  <link rel="stylesheet" href="stylesheets/style.css">
+  <script type="text/javascript" src="javascripts/sensor-data.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+  <style>
+    p {
+      line-height: 0.1;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container" style="width: 90%;">
+
+    <!--
+        <div class="page-header"><h1><b>Lab Conditions</b></h1></div>
+
+      <div class="row row-eq-height">
+
+        <div class="col-md-3">
+          <div class="panel panel-default" style=" height:100%;">
+              <div class="panel-heading">
+                  <h4>Intrusion Detection</h4><small id="pir_value">(no value recieved)</small>
+              </div>
+              <div class="panel-body">
+                <table>
+                  <table>
+                  <tr width="30%" style="vertical-align:middle;">
+                    <td>
+                      <div style="height:20px; width:45%;">
+                        <canvas id="pir1Chart" ></canvas>
+                      </div>
+                    </td>
+                    <td><div>&nbsp;&nbsp;&nbsp;</div></td>
+                    <td>
+                      <h4>&nbsp;<span id="pir1" class="label label-success">Nothing</span></h4>
+                    </td>
+                  </tr>
+
+                  <tr width="30%" style="vertical-align:middle;">
+                    <td>
+                      <div style="height:20px; width:45%;">
+                        <canvas id="pir2Chart" ></canvas>
+                      </div>
+                    </td>
+                    <td><div>&nbsp;&nbsp;&nbsp;</div></td>
+                    <td>
+                      <h4>&nbsp;<span id="pir2" class="label label-success">Nothing</span></h4>
+                    </td>
+                  </tr>
+
+                  <tr width="30%" style="vertical-align:middle;">
+                    <td>
+                      <div style="height:20px; width:45%;">
+                        <canvas id="pir3Chart" ></canvas>
+                      </div>
+                    </td>
+                    <td><div>&nbsp;&nbsp;&nbsp;</div></td>
+                    <td>
+                      <h4>&nbsp;<span id="pir3" class="label label-success">Nothing</span></h4>
+                    </td>
+                  </tr>
+                  </table>
+              </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="panel panel-default" style=" height:100%;">
+              <div class="panel-heading">
+                  <h4>Object Detection</h4><small id="yolo_result">(no value recieved)</small>
+              </div>
+              <div class="panel-body">
+                <table>
+                  <td width="50%">
+                    <h4>&nbsp;<span id="object" class="label label-default">Unknown</span></h4>
+                  </td>
+                  <td>
+                    <a href="images/result.jpg" data-lightbox="result_big">
+                      <img src="images/result.jpg" height="100" alt="result_small" />
+                    </a>
+                  </td>
+                </table>
+              </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="panel panel-default" style=" height:100%;">
+              <div class="panel-heading">
+                  <h4>Sound Classification</h4><small id="audio_result">(no value recieved)</small>
+              </div>
+              <div class="panel-body">
+                  <h4>&nbsp;<span id="sound" class="label label-default">Unknown</span></h4>
+              </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="panel panel-default" style=" height:100%;">
+              <div class="panel-heading">
+                  <h4>Air Pollution Monitor</h4><small id="heat_map_result">(no value recieved)</small>
+              </div>
+              <div class="panel-body">
+                <table>
+                  <td width="50%">
+                    <h4>&nbsp;<span id="heat_map" class="label label-default">Unknown</span></h4>
+                  </td>
+                  <td>
+                    <a href="images/heatmap.jpg" data-lightbox="result_big">
+                      <img src="images/heatmap.jpg" height="100" alt="result_small" />
+                    </a>
+                  </td>
+                </table>
+              </div>
+          </div>
+        </div>
+
+      </div>
+      <hr>
+      <div class="row row-eq-height">
+        <div class="col-md-3">
+          <div class="panel panel-default" style=" height:100%;">
+              <div class="panel-heading">
+                  <h4>CO2</h4><small id="mq5Sensor">(no value recieved)</small>
+              </div>
+              <div class="panel-body">
+                <table>
+                  <tr>
+                    <h4>&nbsp;<span id="mq5Label" class="label label-primary">Unknow</span></h4>
+                  </tr>
+                  <tr>
+                    <div style="height:50px; width:80%;">
+                        <canvas id="mq5Chart" ></canvas>
+                    </div>
+                  </tr>
+                </table>
+              </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="panel panel-default" style=" height:100%;">
+              <div class="panel-heading">
+                  <h4>MQ7</h4><small id="mq7Sensor">(no value recieved)</small>
+              </div>
+              <div class="panel-body">
+                <table>
+                  <tr>
+                    <h4>&nbsp;<span id="mq7Label" class="label label-primary">Unknow</span></h4>
+                  </tr>
+                  <tr>
+                    <div style="height:50px; width:80%;">
+                        <canvas id="mq7Chart" ></canvas>
+                    </div>
+                  </tr>
+                </table>
+              </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="panel panel-default" style=" height:100%;">
+              <div class="panel-heading">
+                  <h4>MQ131</h4><small id="mq131Sensor">(no value recieved)</small>
+              </div>
+              <div class="panel-body">
+                <table>
+                  <tr>
+                    <h4>&nbsp;<span id="mq131Label" class="label label-primary">Unknow</span></h4>
+                  </tr>
+                  <tr>
+                    <div style="height:50px; width:80%;">
+                        <canvas id="mq131Chart" ></canvas>
+                    </div>
+                  </tr>
+                </table>
+              </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="panel panel-default" style=" height:100%;">
+              <div class="panel-heading">
+                  <h4>MQ135</h4><small id="mq135Sensor">(no value recieved)</small>
+              </div>
+              <div class="panel-body">
+                <table>
+                  <tr>
+                    <h4>&nbsp;<span id="mq135Label" class="label label-primary">Unknow</span></h4>
+                  </tr>
+                  <tr>
+                    <div style="height:50px; width:80%;">
+                        <canvas id="mq135Chart" ></canvas>
+                    </div>
+                  </tr>
+                </table>
+              </div>
+          </div>
+        </div>
+
+      </div>
+-->
+
+    <br>
+    <form action="">
+      <input id="iTopic" placeholder="Topic" />
+      <input id="iMessage" placeholder="Message" />
+      <button>Publish</button>
+    </form>
+    <button id="clearButton">Clear</button>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var socket = io();
+      $(function () {
+        
+        $('form').submit(function () {
+          console.log("publish clicked")
+          socket.emit('publish',
+            {
+              'topic': $('#iTopic').val(),
+              'payload': $('#iMessage').val()
+            }
+          );
+
+          //alert("Publish! topic: " + $('#iTopic').val() + ", message: " + $('#iMessage').val());
+          //$('#m').val('');
+          return false;
+        });
+      });
+
+      document.getElementById("clearButton").addEventListener("click",()=>{
+        console.log("clear click")
+        socket.emit('clearScreen')
+        document.getElementById("message").innerHTML=""
+      })
+    </script>
+
+    <hr>
+    <p>
+    <div style="width:90%;height:500px;overflow:auto">
+      <small id="message">no message recieved</small>
+    </div>
+
+  </div>
+
+
+</body>
+
+</html>
