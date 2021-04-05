@@ -17,6 +17,7 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
+var notifyClient = require('../notification/sendNotification')
 
 //mqtt-panel
 var mqtt = require('mqtt');
@@ -69,12 +70,27 @@ mqttclient.on('message', function (topic, payload) {
   let data = JSON.parse(JSON.stringify(payload)).data
   //console.log("onMessage() topic: " + topic + ", msg: " + JSON.stringify(payload))
   console.log("onMessage() topic: " + topic + ", data: " + JSON.stringify(data))
+
   io.sockets.emit('mqtt',
     {
       'topic': topic,
       'payload': data
     }
   );
+
+  try {
+    if (!(/^[a-zA-Z]+$/.test(data))) {
+      // Validation failed
+      let mmsg = String.fromCharCode.apply(null, new Uint8Array(data));
+      if(topic == "esp-s" && mmsg == "101"){
+        notifyClient.sendNotify("UYARI","Misafir Geldi, Kapıyı Açınız!")
+      }
+    }
+    
+  } catch (err) {
+
+  }
+
 });
 
 mqttclient.on('connect', function(data){
