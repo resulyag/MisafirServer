@@ -65,6 +65,9 @@ io.sockets.on('connection', function (socket) {
   });
 });
 
+
+var lastSendedTime = 0
+
 // Push the message to socket.io
 mqttclient.on('message', function (topic, payload) {
   let data = JSON.parse(JSON.stringify(payload)).data
@@ -82,7 +85,10 @@ mqttclient.on('message', function (topic, payload) {
     if (!(/^[a-zA-Z]+$/.test(data))) {
       // Validation failed
       let mmsg = String.fromCharCode.apply(null, new Uint8Array(data));
-      if(topic == "esp-s" && mmsg == "101"){
+
+      let currentTime = new Date().getTime();
+      if(topic == "esp-s" && mmsg == "101" && (currentTime - lastSendedTime > 15 * 1000) ){
+        lastSendedTime = new Date().getTime();
         notifyClient.sendNotify("UYARI","Misafir Geldi, Kapıyı Açınız!")
       }
     }
